@@ -1,15 +1,14 @@
-mod generator;
 mod params;
 #[macro_use]
 mod macros;
+mod v1;
 
 use clap::Parser;
+use params::CliParams;
 
 fn main() -> anyhow::Result<()> {
-    let params = params::CliParams::parse();
-    let generator =
-        generator::Generator::new(params.year, params.year_dir, params.output_dir_path)?;
-    generator.generate_daily_prayer_times()?;
-    generator.generate_weekly_prayer_times()?;
+    match CliParams::try_parse()? {
+        CliParams::V1(v1_params) => v1_params.generate()?,
+    }
     Ok(())
 }
