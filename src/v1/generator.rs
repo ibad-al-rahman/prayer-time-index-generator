@@ -1,6 +1,9 @@
 use crate::pathbuf;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_json::json;
+use sha1::Digest;
+use sha1::Sha1;
 use std::collections::HashMap;
 use std::fs;
 use std::fs::read_dir;
@@ -88,7 +91,8 @@ impl Generator {
                 }
             }
         }
-        week_index_file(self.year, all_year, &self.output_dir)?;
+        week_index_file(self.year, &all_year, &self.output_dir)?;
+        sha1_file(&all_year, &self.output_dir)?;
         Ok(())
     }
 }
@@ -118,7 +122,7 @@ fn day_index_file(year: u16, month: Month, output_dir: &PathBuf) -> anyhow::Resu
     Ok(())
 }
 
-fn week_index_file(year: u16, days: Vec<Day>, output_dir: &PathBuf) -> anyhow::Result<()> {
+fn week_index_file(year: u16, days: &Vec<Day>, output_dir: &PathBuf) -> anyhow::Result<()> {
     let week_dir = pathbuf![output_dir, "week", year.to_string()];
     fs::create_dir_all(&week_dir)?;
     let days_iter = days.iter();
@@ -136,5 +140,19 @@ fn week_index_file(year: u16, days: Vec<Day>, output_dir: &PathBuf) -> anyhow::R
         let json = serde_json::to_value(&week)?;
         serde_json::to_writer(week_file, &json)?;
     }
+    Ok(())
+}
+
+fn sha1_file(days: &Vec<Day>, output_dir: &PathBuf) -> anyhow::Result<()> {
+    let sha1_path = pathbuf![output_dir, "sha1.json"];
+    let mut hasher = Sha1::new();
+    let json = serde_json::to_string(&days)?;
+    hasher.update(json);
+    let result = hasher.finalize();
+    let sha1 = json!({
+        "sha1": format!("{:x}", result)
+    });
+    let sha1_file = File::create(sha1_path)?;
+    serde_json::to_writer(sha1_file, &sha1)?;
     Ok(())
 }
