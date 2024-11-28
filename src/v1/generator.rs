@@ -1,6 +1,5 @@
+use super::dtos::*;
 use crate::pathbuf;
-use serde::Deserialize;
-use serde::Serialize;
 use serde_json::json;
 use sha1::Digest;
 use sha1::Sha1;
@@ -9,45 +8,6 @@ use std::fs;
 use std::fs::read_dir;
 use std::fs::File;
 use std::path::PathBuf;
-
-#[derive(Debug, Deserialize, Serialize)]
-struct PrayerTimes {
-    fajr: String,
-    sunrise: String,
-    dhuhr: String,
-    asr: String,
-    maghrib: String,
-    isha: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct Day {
-    day: u8,
-    hijri: String,
-    prayer_times: PrayerTimes,
-    events: Vec<String>,
-}
-
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct DayIndex {
-    hijri: String,
-    prayer_times: PrayerTimes,
-    events: Vec<String>,
-}
-
-#[derive(Debug)]
-struct Month {
-    month_num: u8,
-    days: Vec<Day>,
-}
-
-pub struct Generator {
-    year: u16,
-    output_dir: PathBuf,
-    input_dir_map: HashMap<String, PathBuf>,
-}
 
 impl Generator {
     pub fn new(year: u16, year_dir: PathBuf, output_dir: PathBuf) -> anyhow::Result<Self> {

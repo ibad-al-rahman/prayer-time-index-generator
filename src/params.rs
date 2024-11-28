@@ -1,4 +1,5 @@
-use crate::{pathbuf, v1};
+use crate::pathbuf;
+use crate::v1::dtos::Generator as V1Generator;
 use clap::Parser;
 use std::path::PathBuf;
 
@@ -24,7 +25,7 @@ pub struct V1Params {
 
 impl V1Params {
     pub fn generate(&self) -> anyhow::Result<()> {
-        let generator = v1::generator::Generator::new(
+        let generator = V1Generator::new(
             self.year,
             self.year_dir.clone(),
             pathbuf![&self.output_dir_path, "v1"],
