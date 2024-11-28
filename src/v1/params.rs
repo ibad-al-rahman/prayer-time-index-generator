@@ -36,9 +36,12 @@ impl V1Params {
         match self.input_format {
             InputFormat::Json => {
                 generator.generate_daily_prayer_times_from_json()?;
-                generator.generate_weekly_prayer_times()?;
+                generator.generate_weekly_prayer_times_from_json()?;
             }
-            InputFormat::Csv => generator.generate_daily_prayer_times_from_csv()?,
+            InputFormat::Csv => {
+                generator.generate_daily_prayer_times_from_csv()?;
+                generator.generate_weekly_prayer_times_from_csv()?;
+            }
         }
         Ok(())
     }
