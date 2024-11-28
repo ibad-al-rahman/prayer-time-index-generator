@@ -28,10 +28,23 @@ impl Generator {
         Ok(this)
     }
 
-    pub fn generate_daily_prayer_times(&self) -> anyhow::Result<()> {
+    pub fn generate_daily_prayer_times_from_json(&self) -> anyhow::Result<()> {
         for i in 1..=12 {
             if let Some(month_file) = self.input_dir_map.get(&format!("{i}.json")) {
                 let days: Vec<Day> = serde_json::from_reader(File::open(month_file)?)?;
+                day_index_file(self.year, Month { month_num: i, days }, &self.output_dir)?;
+            }
+        }
+        Ok(())
+    }
+
+    pub fn generate_daily_prayer_times_from_csv(&self) -> anyhow::Result<()> {
+        for i in 1..=12 {
+            if let Some(month_file) = self.input_dir_map.get(&format!("{i}.csv")) {
+                let days = csv::Reader::from_path(month_file)?
+                    .deserialize()
+                    .flat_map(|record| record)
+                    .collect::<Vec<Day>>();
                 day_index_file(self.year, Month { month_num: i, days }, &self.output_dir)?;
             }
         }
@@ -70,11 +83,7 @@ fn day_index_file(year: u16, month: Month, output_dir: &PathBuf) -> anyhow::Resu
     for day in month.days {
         let day_path = pathbuf![month_dir.clone(), format!("{:02}.json", day.day)];
         let day_file = File::create(day_path)?;
-        let day_idx = DayIndex {
-            hijri: day.hijri,
-            prayer_times: day.prayer_times,
-            events: day.events,
-        };
+        let day_idx: DayIndex = day.into();
         let json = serde_json::to_value(&day_idx)?;
         serde_json::to_writer(day_file, &json)?;
     }

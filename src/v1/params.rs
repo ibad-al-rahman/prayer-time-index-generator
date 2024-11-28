@@ -1,5 +1,6 @@
 use super::dtos::Generator;
 use clap::Parser;
+use clap::ValueEnum;
 use std::path::PathBuf;
 
 #[derive(Debug, Parser)]
@@ -14,6 +15,15 @@ pub struct V1Params {
     /// Where to save the output directory
     #[clap(short = 'o', long = "output")]
     pub output_dir_path: PathBuf,
+    /// Input format
+    #[clap(short = 'f', long = "format")]
+    pub input_format: InputFormat,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum InputFormat {
+    Json,
+    Csv,
 }
 
 impl V1Params {
@@ -23,8 +33,13 @@ impl V1Params {
             self.year_dir.clone(),
             pathbuf![&self.output_dir_path, "v1"],
         )?;
-        generator.generate_daily_prayer_times()?;
-        generator.generate_weekly_prayer_times()?;
+        match self.input_format {
+            InputFormat::Json => {
+                generator.generate_daily_prayer_times_from_json()?;
+                generator.generate_weekly_prayer_times()?;
+            }
+            InputFormat::Csv => generator.generate_daily_prayer_times_from_csv()?,
+        }
         Ok(())
     }
 }
