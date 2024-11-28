@@ -9,6 +9,12 @@ use std::fs::read_dir;
 use std::fs::File;
 use std::path::PathBuf;
 
+pub struct Generator {
+    pub year: u16,
+    pub output_dir: PathBuf,
+    pub input_dir_map: HashMap<String, PathBuf>,
+}
+
 impl Generator {
     pub fn new(year: u16, year_dir: PathBuf, output_dir: PathBuf) -> anyhow::Result<Self> {
         let input_dir_content = read_dir(&year_dir)?
@@ -28,7 +34,7 @@ impl Generator {
         Ok(this)
     }
 
-    pub fn generate_daily_prayer_times(&self) -> anyhow::Result<()> {
+    pub fn generate_daily_prayer_times_from_json(&self) -> anyhow::Result<()> {
         for i in 1..=12 {
             if let Some(month_file) = self.input_dir_map.get(&format!("{i}.json")) {
                 let days: Vec<Day> = serde_json::from_reader(File::open(month_file)?)?;
@@ -38,7 +44,20 @@ impl Generator {
         Ok(())
     }
 
-    pub fn generate_weekly_prayer_times(&self) -> anyhow::Result<()> {
+    pub fn generate_daily_prayer_times_from_csv(&self) -> anyhow::Result<()> {
+        for i in 1..=12 {
+            if let Some(month_file) = self.input_dir_map.get(&format!("{i}.csv")) {
+                let days = csv::Reader::from_path(month_file)?
+                    .deserialize()
+                    .flatten()
+                    .collect::<Vec<Day>>();
+                day_index_file(self.year, Month { month_num: i, days }, &self.output_dir)?;
+            }
+        }
+        Ok(())
+    }
+
+    pub fn generate_weekly_prayer_times_from_json(&self) -> anyhow::Result<()> {
         let mut all_year = vec![];
         let mut days_count = 1;
         for i in 1..=12 {
@@ -49,6 +68,29 @@ impl Generator {
                     all_year.push(day);
                     days_count += 1;
                 }
+            }
+        }
+        week_index_file(self.year, &all_year, &self.output_dir)?;
+        sha1_file(&all_year, &self.output_dir)?;
+        Ok(())
+    }
+
+    pub fn generate_weekly_prayer_times_from_csv(&self) -> anyhow::Result<()> {
+        let mut all_year = vec![];
+        let mut days_count = 1;
+        for i in 1..=12 {
+            if let Some(month_file) = self.input_dir_map.get(&format!("{i}.csv")) {
+                all_year.append(
+                    &mut csv::Reader::from_path(month_file)?
+                        .deserialize()
+                        .flatten()
+                        .map(|mut day: Day| {
+                            day.day = days_count;
+                            days_count += 1;
+                            day
+                        })
+                        .collect::<Vec<Day>>(),
+                );
             }
         }
         week_index_file(self.year, &all_year, &self.output_dir)?;
@@ -70,11 +112,7 @@ fn day_index_file(year: u16, month: Month, output_dir: &PathBuf) -> anyhow::Resu
     for day in month.days {
         let day_path = pathbuf![month_dir.clone(), format!("{:02}.json", day.day)];
         let day_file = File::create(day_path)?;
-        let day_idx = DayIndex {
-            hijri: day.hijri,
-            prayer_times: day.prayer_times,
-            events: day.events,
-        };
+        let day_idx: DayIndex = day.into();
         let json = serde_json::to_value(&day_idx)?;
         serde_json::to_writer(day_file, &json)?;
     }
@@ -82,7 +120,7 @@ fn day_index_file(year: u16, month: Month, output_dir: &PathBuf) -> anyhow::Resu
     Ok(())
 }
 
-fn week_index_file(year: u16, days: &Vec<Day>, output_dir: &PathBuf) -> anyhow::Result<()> {
+fn week_index_file(year: u16, days: &[Day], output_dir: &PathBuf) -> anyhow::Result<()> {
     let week_dir = pathbuf![output_dir, "week", year.to_string()];
     fs::create_dir_all(&week_dir)?;
     let days_iter = days.iter();
