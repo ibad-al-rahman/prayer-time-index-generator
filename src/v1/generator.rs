@@ -9,6 +9,12 @@ use std::fs::read_dir;
 use std::fs::File;
 use std::path::PathBuf;
 
+pub struct Generator {
+    pub year: u16,
+    pub output_dir: PathBuf,
+    pub input_dir_map: HashMap<String, PathBuf>,
+}
+
 impl Generator {
     pub fn new(year: u16, year_dir: PathBuf, output_dir: PathBuf) -> anyhow::Result<Self> {
         let input_dir_content = read_dir(&year_dir)?

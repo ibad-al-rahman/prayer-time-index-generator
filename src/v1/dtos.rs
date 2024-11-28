@@ -1,7 +1,5 @@
 use serde::Deserialize;
 use serde::Serialize;
-use std::collections::HashMap;
-use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PrayerTimes {
@@ -53,10 +51,4 @@ impl From<Day> for DayIndex {
 pub struct Month {
     pub month_num: u8,
     pub days: Vec<Day>,
-}
-
-pub struct Generator {
-    pub year: u16,
-    pub output_dir: PathBuf,
-    pub input_dir_map: HashMap<String, PathBuf>,
 }

@@ -1,4 +1,4 @@
-use super::dtos::Generator;
+use super::generator::Generator;
 use clap::Parser;
 use clap::ValueEnum;
 use std::path::PathBuf;
