@@ -35,13 +35,11 @@ impl V1Params {
             pathbuf![&self.output_dir_path, "v1"],
         )?;
         match self.input_format {
-            InputFormat::Json => {
-                generator.generate_daily_prayer_times_from_json()?;
-                generator.generate_weekly_prayer_times_from_json()?;
-            }
+            InputFormat::Json => {}
             InputFormat::Csv => {
-                generator.generate_daily_prayer_times_from_csv()?;
-                generator.generate_weekly_prayer_times_from_csv()?;
+                generator.generate_daily_prayer_times()?;
+                generator.generate_weekly_prayer_times()?;
+                generator.generate_sha1()?;
             }
         }
         Ok(())
