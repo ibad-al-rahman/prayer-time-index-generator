@@ -1,5 +1,6 @@
 use super::dtos::*;
 use crate::pathbuf;
+use crate::prelude::Fallible;
 use serde_json::json;
 use sha1::Digest;
 use sha1::Sha1;
@@ -16,7 +17,7 @@ pub struct Generator {
 }
 
 impl Generator {
-    pub fn new(year: u16, year_dir: PathBuf, output_dir: PathBuf) -> anyhow::Result<Self> {
+    pub fn new(year: u16, year_dir: PathBuf, output_dir: PathBuf) -> Fallible<Self> {
         let input_dir_content = read_dir(&year_dir)?
             .flatten()
             .map(|entry| {
@@ -34,7 +35,7 @@ impl Generator {
         Ok(this)
     }
 
-    pub fn generate_daily_prayer_times_from_json(&self) -> anyhow::Result<()> {
+    pub fn generate_daily_prayer_times_from_json(&self) -> Fallible<()> {
         for i in 1..=12 {
             if let Some(month_file) = self.input_dir_map.get(&format!("{i}.json")) {
                 let days: Vec<Day> = serde_json::from_reader(File::open(month_file)?)?;
@@ -44,7 +45,7 @@ impl Generator {
         Ok(())
     }
 
-    pub fn generate_daily_prayer_times_from_csv(&self) -> anyhow::Result<()> {
+    pub fn generate_daily_prayer_times_from_csv(&self) -> Fallible<()> {
         for i in 1..=12 {
             if let Some(month_file) = self.input_dir_map.get(&format!("{i}.csv")) {
                 let days = csv::Reader::from_path(month_file)?
@@ -57,7 +58,7 @@ impl Generator {
         Ok(())
     }
 
-    pub fn generate_weekly_prayer_times_from_json(&self) -> anyhow::Result<()> {
+    pub fn generate_weekly_prayer_times_from_json(&self) -> Fallible<()> {
         let mut all_year = vec![];
         let mut days_count = 1;
         for i in 1..=12 {
@@ -75,7 +76,7 @@ impl Generator {
         Ok(())
     }
 
-    pub fn generate_weekly_prayer_times_from_csv(&self) -> anyhow::Result<()> {
+    pub fn generate_weekly_prayer_times_from_csv(&self) -> Fallible<()> {
         let mut all_year = vec![];
         let mut days_count = 1;
         for i in 1..=12 {
@@ -99,7 +100,7 @@ impl Generator {
     }
 }
 
-fn day_index_file(year: u16, month: Month, output_dir: &PathBuf) -> anyhow::Result<()> {
+fn day_index_file(year: u16, month: Month, output_dir: &PathBuf) -> Fallible<()> {
     let month_num = month.month_num;
     let month_dir = pathbuf![
         output_dir,
@@ -120,7 +121,7 @@ fn day_index_file(year: u16, month: Month, output_dir: &PathBuf) -> anyhow::Resu
     Ok(())
 }
 
-fn week_index_file(year: u16, days: &[Day], output_dir: &PathBuf) -> anyhow::Result<()> {
+fn week_index_file(year: u16, days: &[Day], output_dir: &PathBuf) -> Fallible<()> {
     let week_dir = pathbuf![output_dir, "week", year.to_string()];
     fs::create_dir_all(&week_dir)?;
     let days_iter = days.iter();
@@ -141,7 +142,7 @@ fn week_index_file(year: u16, days: &[Day], output_dir: &PathBuf) -> anyhow::Res
     Ok(())
 }
 
-fn sha1_file(days: &Vec<Day>, output_dir: &PathBuf) -> anyhow::Result<()> {
+fn sha1_file(days: &Vec<Day>, output_dir: &PathBuf) -> Fallible<()> {
     let sha1_path = pathbuf![output_dir, "sha1.json"];
     let mut hasher = Sha1::new();
     let json = serde_json::to_string(&days)?;

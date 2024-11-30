@@ -1,4 +1,5 @@
 use super::generator::Generator;
+use crate::prelude::Fallible;
 use clap::Parser;
 use clap::ValueEnum;
 use std::path::PathBuf;
@@ -27,7 +28,7 @@ pub enum InputFormat {
 }
 
 impl V1Params {
-    pub fn generate(&self) -> anyhow::Result<()> {
+    pub fn generate(&self) -> Fallible<()> {
         let generator = Generator::new(
             self.year,
             self.year_dir.clone(),
