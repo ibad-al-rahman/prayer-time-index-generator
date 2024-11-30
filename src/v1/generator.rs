@@ -99,6 +99,11 @@ impl Generator {
         self.generate_week_idx(self.yearly_prayer_times.clone())
     }
 
+    pub fn generate_yearly_prayer_times(&self) -> Fallible<()> {
+        self.generate_year_idx(self.yearly_prayer_times.clone())?;
+        Ok(())
+    }
+
     fn generate_day_idx(&self, days_of_month: Vec<DailyPrayerTime>) -> Fallible<()> {
         let Some(day_one) = days_of_month.first() else {
             return Ok(());
@@ -145,6 +150,22 @@ impl Generator {
             let json = serde_json::to_value(&week)?;
             serde_json::to_writer(week_file, &json)?;
         }
+        Ok(())
+    }
+
+    fn generate_year_idx(&self, year: Vec<DailyPrayerTime>) -> Fallible<()> {
+        let Some(day_one) = year.first() else {
+            return Ok(());
+        };
+        let year_num = day_one.date.year;
+        let year_dir = pathbuf![self.output_dir.clone(), "year"];
+        fs::create_dir_all(&year_dir)?;
+
+        let year_path = pathbuf![year_dir.clone(), format!("{year_num}.json")];
+        let year_file = File::create(year_path)?;
+        let year: Vec<YearlyOutputDto> = year.into_iter().map(Into::into).collect();
+        let json = serde_json::to_value(&year)?;
+        serde_json::to_writer(year_file, &json)?;
         Ok(())
     }
 

@@ -39,6 +39,7 @@ impl V1Params {
             InputFormat::Csv => {
                 generator.generate_daily_prayer_times()?;
                 generator.generate_weekly_prayer_times()?;
+                generator.generate_yearly_prayer_times()?;
                 generator.generate_sha1()?;
             }
         }
