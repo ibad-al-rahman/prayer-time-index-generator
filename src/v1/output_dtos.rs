@@ -28,6 +28,14 @@ pub struct WeekDayOutputDto {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct MonthDayOutputDto {
+    pub day_index: u8,
+    pub hijri: String,
+    pub prayer_times: PrayerTimesOutputDto,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct YearlyOutputDto {
     pub day_index: u8,
     pub hijri: String,
@@ -53,7 +61,24 @@ impl From<DailyPrayerTime> for DayOutputDto {
 impl From<DailyPrayerTime> for WeekDayOutputDto {
     fn from(day: DailyPrayerTime) -> Self {
         Self {
-            day_index: day.date.index,
+            day_index: day.date.day,
+            hijri: day.hijri_date,
+            prayer_times: PrayerTimesOutputDto {
+                fajer: day.prayer_times.fajer,
+                sunrise: day.prayer_times.sunrise,
+                dhuhr: day.prayer_times.dhuhr,
+                asr: day.prayer_times.asr,
+                maghrib: day.prayer_times.maghrib,
+                ishaa: day.prayer_times.ishaa,
+            },
+        }
+    }
+}
+
+impl From<DailyPrayerTime> for MonthDayOutputDto {
+    fn from(day: DailyPrayerTime) -> Self {
+        Self {
+            day_index: day.date.day,
             hijri: day.hijri_date,
             prayer_times: PrayerTimesOutputDto {
                 fajer: day.prayer_times.fajer,

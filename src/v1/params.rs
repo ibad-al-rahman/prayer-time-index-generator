@@ -40,6 +40,7 @@ impl V1Params {
                 generator.generate_daily_prayer_times()?;
                 generator.generate_weekly_prayer_times()?;
                 generator.generate_yearly_prayer_times()?;
+                generator.generate_monthly_prayer_times()?;
                 generator.generate_sha1()?;
             }
         }

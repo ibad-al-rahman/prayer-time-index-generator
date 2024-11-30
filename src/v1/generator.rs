@@ -99,9 +99,12 @@ impl Generator {
         self.generate_week_idx(self.yearly_prayer_times.clone())
     }
 
+    pub fn generate_monthly_prayer_times(&self) -> Fallible<()> {
+        self.generate_monthly_idx(self.yearly_prayer_times.clone())
+    }
+
     pub fn generate_yearly_prayer_times(&self) -> Fallible<()> {
-        self.generate_year_idx(self.yearly_prayer_times.clone())?;
-        Ok(())
+        self.generate_year_idx(self.yearly_prayer_times.clone())
     }
 
     fn generate_day_idx(&self, days_of_month: Vec<DailyPrayerTime>) -> Fallible<()> {
@@ -149,6 +152,28 @@ impl Generator {
             let week_file = File::create(week_path)?;
             let json = serde_json::to_value(&week)?;
             serde_json::to_writer(week_file, &json)?;
+        }
+        Ok(())
+    }
+
+    fn generate_monthly_idx(&self, year: Vec<DailyPrayerTime>) -> Fallible<()> {
+        let Some(day_one) = year.first() else {
+            return Ok(());
+        };
+        let year_num = day_one.date.year;
+        let month_dir = pathbuf![self.output_dir.clone(), "month", year_num.to_string()];
+        fs::create_dir_all(&month_dir)?;
+        let days_iter = year.into_iter();
+        for i in 1..=12 {
+            let month = days_iter
+                .clone()
+                .filter(|day| day.date.month == i)
+                .map(|day| day.into())
+                .collect::<Vec<MonthDayOutputDto>>();
+            let month_path = pathbuf![month_dir.clone(), format!("{i}.json")];
+            let month_file = File::create(month_path)?;
+            let json = serde_json::to_value(&month)?;
+            serde_json::to_writer(month_file, &json)?;
         }
         Ok(())
     }
