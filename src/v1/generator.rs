@@ -145,10 +145,7 @@ impl Generator {
                 .take(7)
                 .map(|day| day.into())
                 .collect::<Vec<WeekDayOutputDto>>();
-            let week_path = pathbuf![
-                week_dir.clone(),
-                format!("{:02}", format!("{week_idx}.json"))
-            ];
+            let week_path = pathbuf![week_dir.clone(), format!("{week_idx:02}.json")];
             let week_file = File::create(week_path)?;
             let json = serde_json::to_value(&week)?;
             serde_json::to_writer_pretty(week_file, &json)?;
@@ -170,7 +167,7 @@ impl Generator {
                 .filter(|day| day.date.month == i)
                 .map(|day| day.into())
                 .collect::<Vec<MonthDayOutputDto>>();
-            let month_path = pathbuf![month_dir.clone(), format!("{i}.json")];
+            let month_path = pathbuf![month_dir.clone(), format!("{i:02}.json")];
             let month_file = File::create(month_path)?;
             let json = serde_json::to_value(&month)?;
             serde_json::to_writer_pretty(month_file, &json)?;
