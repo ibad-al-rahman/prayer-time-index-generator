@@ -4,7 +4,7 @@ use serde::Deserialize;
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DayInputDto {
-    pub day: u8,
+    pub day: u16,
     pub hijri: String,
     pub fajer: String,
     pub sunrise: String,

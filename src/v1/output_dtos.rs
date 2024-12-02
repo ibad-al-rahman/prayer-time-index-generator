@@ -21,7 +21,7 @@ pub struct PrayerTimesOutputDto {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct WeekDayOutputDto {
-    pub day_index: u8,
+    pub day_index: u16,
     pub hijri: String,
     pub prayer_times: PrayerTimesOutputDto,
 }
@@ -29,7 +29,7 @@ pub struct WeekDayOutputDto {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MonthDayOutputDto {
-    pub day_index: u8,
+    pub day_index: u16,
     pub hijri: String,
     pub prayer_times: PrayerTimesOutputDto,
 }
@@ -37,7 +37,7 @@ pub struct MonthDayOutputDto {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct YearlyOutputDto {
-    pub day_index: u8,
+    pub day_index: u16,
     pub hijri: String,
     pub prayer_times: PrayerTimesOutputDto,
 }
