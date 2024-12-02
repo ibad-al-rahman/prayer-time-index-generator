@@ -21,8 +21,8 @@ pub struct PrayerTimes {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MiladiDate {
-    pub index: u8,
-    pub day: u8,
+    pub index: u16,
+    pub day: u16,
     pub month: u8,
     pub year: u16,
 }

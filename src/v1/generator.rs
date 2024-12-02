@@ -43,7 +43,7 @@ impl Generator {
         input_dir_map: HashMap<String, PathBuf>,
     ) -> Fallible<Vec<DailyPrayerTime>> {
         let mut all_year = vec![];
-        let mut days_count = 1;
+        let mut days_count: u16 = 1;
 
         // loop over the 12 months
         for i in 1..=12 {
@@ -125,7 +125,7 @@ impl Generator {
             let day_file = File::create(day_path)?;
             let day_idx: DayOutputDto = day.into();
             let json = serde_json::to_value(&day_idx)?;
-            serde_json::to_writer(day_file, &json)?;
+            serde_json::to_writer_pretty(day_file, &json)?;
         }
         Ok(())
     }
@@ -151,7 +151,7 @@ impl Generator {
             ];
             let week_file = File::create(week_path)?;
             let json = serde_json::to_value(&week)?;
-            serde_json::to_writer(week_file, &json)?;
+            serde_json::to_writer_pretty(week_file, &json)?;
         }
         Ok(())
     }
@@ -173,7 +173,7 @@ impl Generator {
             let month_path = pathbuf![month_dir.clone(), format!("{i}.json")];
             let month_file = File::create(month_path)?;
             let json = serde_json::to_value(&month)?;
-            serde_json::to_writer(month_file, &json)?;
+            serde_json::to_writer_pretty(month_file, &json)?;
         }
         Ok(())
     }
@@ -190,7 +190,7 @@ impl Generator {
         let year_file = File::create(year_path)?;
         let year: Vec<YearlyOutputDto> = year.into_iter().map(Into::into).collect();
         let json = serde_json::to_value(&year)?;
-        serde_json::to_writer(year_file, &json)?;
+        serde_json::to_writer_pretty(year_file, &json)?;
         Ok(())
     }
 
@@ -210,7 +210,7 @@ impl Generator {
             "sha1": format!("{:x}", result)
         });
         let sha1_file = File::create(sha1_path)?;
-        serde_json::to_writer(sha1_file, &sha1)?;
+        serde_json::to_writer_pretty(sha1_file, &sha1)?;
         Ok(())
     }
 }
