@@ -3,7 +3,7 @@ use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DailyPrayerTime {
-    pub date: MiladiDate,
+    pub gregorian_date: GregorianDate,
     pub hijri_date: String,
     pub prayer_times: PrayerTimes,
     pub event: Option<Event>,
@@ -20,7 +20,7 @@ pub struct PrayerTimes {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct MiladiDate {
+pub struct GregorianDate {
     pub index: u16,
     pub day: u16,
     pub month: u8,
@@ -33,19 +33,19 @@ pub struct Event {
     pub en: String,
 }
 
-impl Display for MiladiDate {
+impl Display for GregorianDate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("{}/{}/{}", self.year, self.month, self.day))
     }
 }
 
-impl PartialOrd for MiladiDate {
+impl PartialOrd for GregorianDate {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.index.cmp(&other.index))
     }
 }
 
-impl Ord for MiladiDate {
+impl Ord for GregorianDate {
     fn cmp(&self, other: &Self) -> Ordering {
         self.index.cmp(&other.index)
     }
@@ -53,12 +53,12 @@ impl Ord for MiladiDate {
 
 impl Ord for DailyPrayerTime {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.date.cmp(&other.date)
+        self.gregorian_date.cmp(&other.gregorian_date)
     }
 }
 
 impl PartialOrd for DailyPrayerTime {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.date.cmp(&other.date))
+        Some(self.gregorian_date.cmp(&other.gregorian_date))
     }
 }

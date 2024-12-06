@@ -17,7 +17,7 @@ pub struct DayInputDto {
 impl From<DailyPrayerTime> for DayInputDto {
     fn from(day: DailyPrayerTime) -> Self {
         Self {
-            day: day.date.day,
+            day: day.gregorian_date.day,
             hijri: day.hijri_date,
             fajer: day.prayer_times.fajer,
             sunrise: day.prayer_times.sunrise,
