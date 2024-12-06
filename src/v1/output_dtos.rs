@@ -29,13 +29,14 @@ impl From<DailyPrayerTime> for DayOutputDto {
             .collect::<Vec<_>>();
         let hijri = if hijri_date_components.len() == 3 {
             format!(
-                "{}/{:02}/{:02}",
+                "{:02}/{:02}/{}",
                 hijri_date_components[0], hijri_date_components[1], hijri_date_components[2]
             )
         } else {
             day.hijri_date
         };
 
+        // In the ID, we've made the format YYYYMMDD to make it easier to sort the dates
         let id = match format!(
             "{}{:02}{:02}",
             day.gregorian_date.year, day.gregorian_date.month, day.gregorian_date.day
@@ -49,8 +50,8 @@ impl From<DailyPrayerTime> for DayOutputDto {
         Self {
             id,
             gregorian: format!(
-                "{}/{:02}/{:02}",
-                day.gregorian_date.year, day.gregorian_date.month, day.gregorian_date.day
+                "{:02}/{:02}/{}",
+                day.gregorian_date.day, day.gregorian_date.month, day.gregorian_date.year
             ),
             hijri,
             prayer_times: PrayerTimesOutputDto {
