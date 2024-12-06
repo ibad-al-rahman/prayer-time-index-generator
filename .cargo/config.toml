@@ -1,0 +1,2 @@
+[alias]
+ptig = ["run", "--"]

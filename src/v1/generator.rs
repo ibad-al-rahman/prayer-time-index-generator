@@ -4,7 +4,7 @@ use super::output_dtos::*;
 use crate::pathbuf;
 use crate::prelude::Fallible;
 use crate::v1::domain::DailyPrayerTime;
-use crate::v1::domain::MiladiDate;
+use crate::v1::domain::GregorianDate;
 use serde_json::json;
 use sha1::Digest;
 use sha1::Sha1;
@@ -54,7 +54,7 @@ impl Generator {
                     .collect::<Vec<DayInputDto>>();
                 for day in days {
                     let daily_prayer_time = DailyPrayerTime {
-                        date: MiladiDate {
+                        gregorian_date: GregorianDate {
                             index: days_count,
                             day: day.day,
                             month: i,
@@ -88,7 +88,7 @@ impl Generator {
                 .yearly_prayer_times
                 .clone()
                 .into_iter()
-                .filter(|day| day.date.month == i)
+                .filter(|day| day.gregorian_date.month == i)
                 .collect::<Vec<_>>();
             self.generate_day_idx(days)?;
         }
@@ -111,8 +111,8 @@ impl Generator {
         let Some(day_one) = days_of_month.first() else {
             return Ok(());
         };
-        let year_num = day_one.date.year;
-        let month_num = day_one.date.month;
+        let year_num = day_one.gregorian_date.year;
+        let month_num = day_one.gregorian_date.month;
         let dir = pathbuf![
             self.output_dir.clone(),
             "day",
@@ -121,7 +121,7 @@ impl Generator {
         ];
         fs::create_dir_all(&dir)?;
         for day in days_of_month {
-            let day_path = pathbuf![dir.clone(), format!("{:02}.json", day.date.day)];
+            let day_path = pathbuf![dir.clone(), format!("{:02}.json", day.gregorian_date.day)];
             let day_file = File::create(day_path)?;
             let day_idx: DayOutputDto = day.into();
             let json = serde_json::to_value(&day_idx)?;
@@ -134,7 +134,7 @@ impl Generator {
         let Some(day_one) = days_of_month.first() else {
             return Ok(());
         };
-        let year_num = day_one.date.year;
+        let year_num = day_one.gregorian_date.year;
         let week_dir = pathbuf![self.output_dir.clone(), "week", year_num.to_string()];
         fs::create_dir_all(&week_dir)?;
         let days_iter = days_of_month.into_iter();
@@ -144,7 +144,7 @@ impl Generator {
                 .skip((week_idx - 1) * 7)
                 .take(7)
                 .map(|day| day.into())
-                .collect::<Vec<WeekDayOutputDto>>();
+                .collect::<Vec<DayOutputDto>>();
             let week_path = pathbuf![week_dir.clone(), format!("{week_idx:02}.json")];
             let week_file = File::create(week_path)?;
             let json = serde_json::to_value(&week)?;
@@ -157,16 +157,16 @@ impl Generator {
         let Some(day_one) = year.first() else {
             return Ok(());
         };
-        let year_num = day_one.date.year;
+        let year_num = day_one.gregorian_date.year;
         let month_dir = pathbuf![self.output_dir.clone(), "month", year_num.to_string()];
         fs::create_dir_all(&month_dir)?;
         let days_iter = year.into_iter();
         for i in 1..=12 {
             let month = days_iter
                 .clone()
-                .filter(|day| day.date.month == i)
+                .filter(|day| day.gregorian_date.month == i)
                 .map(|day| day.into())
-                .collect::<Vec<MonthDayOutputDto>>();
+                .collect::<Vec<DayOutputDto>>();
             let month_path = pathbuf![month_dir.clone(), format!("{i:02}.json")];
             let month_file = File::create(month_path)?;
             let json = serde_json::to_value(&month)?;
@@ -179,13 +179,13 @@ impl Generator {
         let Some(day_one) = year.first() else {
             return Ok(());
         };
-        let year_num = day_one.date.year;
+        let year_num = day_one.gregorian_date.year;
         let year_dir = pathbuf![self.output_dir.clone(), "year"];
         fs::create_dir_all(&year_dir)?;
 
         let year_path = pathbuf![year_dir.clone(), format!("{year_num}.json")];
         let year_file = File::create(year_path)?;
-        let year: Vec<YearlyOutputDto> = year.into_iter().map(Into::into).collect();
+        let year: Vec<DayOutputDto> = year.into_iter().map(Into::into).collect();
         let json = serde_json::to_value(&year)?;
         serde_json::to_writer_pretty(year_file, &json)?;
         Ok(())
@@ -194,7 +194,7 @@ impl Generator {
     pub fn generate_sha1(&self) -> Fallible<()> {
         let sha1_path = pathbuf![self.output_dir.clone(), "sha1.json"];
         let mut hasher = Sha1::new();
-        let yearly_prayer_times: Vec<YearlyOutputDto> = self
+        let yearly_prayer_times: Vec<DayOutputDto> = self
             .yearly_prayer_times
             .clone()
             .into_iter()
