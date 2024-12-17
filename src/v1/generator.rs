@@ -192,7 +192,13 @@ impl Generator {
     }
 
     pub fn generate_sha1(&self) -> Fallible<()> {
-        let sha1_path = pathbuf![self.output_dir.clone(), "sha1.json"];
+        let Some(day_one) = self.yearly_prayer_times.first() else {
+            return Ok(());
+        };
+        let year_num = day_one.gregorian_date.year;
+        let sha1_dir = pathbuf![self.output_dir.clone(), "sha1"];
+        fs::create_dir_all(&sha1_dir)?;
+        let sha1_path = pathbuf![sha1_dir, format!("{year_num}.json")];
         let mut hasher = Sha1::new();
         let yearly_prayer_times: Vec<DayOutputDto> = self
             .yearly_prayer_times
