@@ -2,7 +2,6 @@ use super::domain::DailyPrayerTime;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct DayInputDto {
     pub day: u16,
     pub hijri: String,
@@ -12,6 +11,13 @@ pub struct DayInputDto {
     pub asr: String,
     pub maghrib: String,
     pub ishaa: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct EventInputDto {
+    pub date: String,
+    pub ar: String,
+    pub en: Option<String>,
 }
 
 impl From<DailyPrayerTime> for DayInputDto {
