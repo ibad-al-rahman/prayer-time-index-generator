@@ -46,15 +46,11 @@ impl From<DailyPrayerTime> for DayOutputDto {
         };
 
         // In the ID, we've made the format YYYYMMDD to make it easier to sort the dates
-        let id = match format!(
+        let id = format!(
             "{}{:02}{:02}",
             day.gregorian_date.year, day.gregorian_date.month, day.gregorian_date.day
         )
-        .parse()
-        {
-            Ok(id) => id,
-            Err(_) => 0,
-        };
+        .parse().unwrap_or_default();
         let event = match day.event {
             None => None,
             Some(e) => Some(EventOutputDto { ar: e.ar, en: e.en }),
