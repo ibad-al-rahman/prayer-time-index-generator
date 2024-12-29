@@ -1,5 +1,7 @@
 use super::domain;
+use super::domain::Event;
 use super::input_dtos::DayInputDto;
+use super::input_dtos::EventInputDto;
 use super::output_dtos::*;
 use crate::pathbuf;
 use crate::prelude::Fallible;
@@ -30,7 +32,9 @@ impl Generator {
                 )
             })
             .collect::<HashMap<_, _>>();
-        let yearly_prayer_times = Self::make_yearly_prayer_times(year, input_dir_content.clone())?;
+        let events = Self::make_events(year_dir)?;
+        let yearly_prayer_times =
+            Self::make_yearly_prayer_times(year, input_dir_content.clone(), events)?;
         let this = Self {
             output_dir,
             yearly_prayer_times,
@@ -38,9 +42,21 @@ impl Generator {
         Ok(this)
     }
 
+    fn make_events(year_dir: PathBuf) -> Fallible<HashMap<String, Event>> {
+        let events = csv::Reader::from_path(pathbuf![year_dir, "events.csv"])?
+            .deserialize()
+            .flatten()
+            .collect::<Vec<EventInputDto>>();
+        Ok(events
+            .into_iter()
+            .map(|e| (e.date, Event { ar: e.ar, en: e.en }))
+            .collect())
+    }
+
     fn make_yearly_prayer_times(
         year: u16,
         input_dir_map: HashMap<String, PathBuf>,
+        year_events: HashMap<String, Event>,
     ) -> Fallible<Vec<DailyPrayerTime>> {
         let mut all_year = vec![];
         let mut days_count: u16 = 1;
@@ -53,6 +69,8 @@ impl Generator {
                     .flatten()
                     .collect::<Vec<DayInputDto>>();
                 for day in days {
+                    let event_key = format!("{}/{}", day.day, i);
+                    let event = year_events.get(&event_key);
                     let daily_prayer_time = DailyPrayerTime {
                         gregorian_date: GregorianDate {
                             index: days_count,
@@ -69,7 +87,7 @@ impl Generator {
                             maghrib: day.maghrib,
                             ishaa: day.ishaa,
                         },
-                        event: None,
+                        event: event.cloned(),
                     };
                     all_year.push(daily_prayer_time);
                     days_count += 1;

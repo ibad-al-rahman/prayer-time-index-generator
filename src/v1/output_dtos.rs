@@ -8,6 +8,8 @@ pub struct DayOutputDto {
     pub gregorian: String,
     pub hijri: String,
     pub prayer_times: PrayerTimesOutputDto,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event: Option<EventOutputDto>,
 }
 
 #[derive(Debug, Serialize)]
@@ -18,6 +20,13 @@ pub struct PrayerTimesOutputDto {
     pub asr: String,
     pub maghrib: String,
     pub ishaa: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct EventOutputDto {
+    pub ar: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub en: Option<String>,
 }
 
 impl From<DailyPrayerTime> for DayOutputDto {
@@ -46,6 +55,10 @@ impl From<DailyPrayerTime> for DayOutputDto {
             Ok(id) => id,
             Err(_) => 0,
         };
+        let event = match day.event {
+            None => None,
+            Some(e) => Some(EventOutputDto { ar: e.ar, en: e.en }),
+        };
 
         Self {
             id,
@@ -62,6 +75,7 @@ impl From<DailyPrayerTime> for DayOutputDto {
                 maghrib: day.prayer_times.maghrib,
                 ishaa: day.prayer_times.ishaa,
             },
+            event,
         }
     }
 }

@@ -30,7 +30,7 @@ pub struct GregorianDate {
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub struct Event {
     pub ar: String,
-    pub en: String,
+    pub en: Option<String>,
 }
 
 impl Display for GregorianDate {
