@@ -63,7 +63,7 @@ impl Generator {
 
         // loop over the 12 months
         for i in 1..=12 {
-            if let Some(month_file) = input_dir_map.get(&format!("{i}.csv")) {
+            if let Some(month_file) = input_dir_map.get(&format!("{i:02}.csv")) {
                 let days = csv::Reader::from_path(month_file)?
                     .deserialize()
                     .flatten()
