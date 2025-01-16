@@ -19,12 +19,26 @@ pub struct V1Params {
     /// Input format
     #[clap(short = 'f', long = "format")]
     pub input_format: InputFormat,
+    /// The day of the week that the generated index will start with
+    #[clap(short = 's', long, default_value = "sat")]
+    pub week_start_day: WeekDay,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum InputFormat {
     Json,
     Csv,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum WeekDay {
+    Sun,
+    Mon,
+    Tue,
+    Wed,
+    Thu,
+    Fri,
+    Sat,
 }
 
 impl V1Params {
