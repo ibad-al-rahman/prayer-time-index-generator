@@ -203,7 +203,11 @@ impl Generator {
 
         let year_path = pathbuf![year_dir.clone(), format!("{year_num}.json")];
         let year_file = File::create(year_path)?;
-        let year: Vec<DayOutputDto> = year.into_iter().map(Into::into).collect();
+        let days: Vec<DayOutputDto> = year.into_iter().map(Into::into).collect();
+        let year = YearOutputDto {
+            year: days,
+            sha1: self.make_sha1()?,
+        };
         let json = serde_json::to_value(&year)?;
         serde_json::to_writer_pretty(year_file, &json)?;
         Ok(())
@@ -217,6 +221,15 @@ impl Generator {
         let sha1_dir = pathbuf![self.output_dir.clone(), "sha1"];
         fs::create_dir_all(&sha1_dir)?;
         let sha1_path = pathbuf![sha1_dir, format!("{year_num}.json")];
+        let sha1 = json!({
+            "sha1": self.make_sha1()?,
+        });
+        let sha1_file = File::create(sha1_path)?;
+        serde_json::to_writer_pretty(sha1_file, &sha1)?;
+        Ok(())
+    }
+
+    fn make_sha1(&self) -> Fallible<String> {
         let mut hasher = Sha1::new();
         let yearly_prayer_times: Vec<DayOutputDto> = self
             .yearly_prayer_times
@@ -227,11 +240,6 @@ impl Generator {
         let json = serde_json::to_string(&yearly_prayer_times)?;
         hasher.update(json);
         let result = hasher.finalize();
-        let sha1 = json!({
-            "sha1": format!("{:x}", result)
-        });
-        let sha1_file = File::create(sha1_path)?;
-        serde_json::to_writer_pretty(sha1_file, &sha1)?;
-        Ok(())
+        Ok(format!("{:x}", result))
     }
 }
