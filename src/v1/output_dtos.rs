@@ -2,6 +2,12 @@ use super::domain::DailyPrayerTime;
 use serde::Serialize;
 
 #[derive(Debug, Serialize)]
+pub struct YearOutputDto {
+    pub year: Vec<DayOutputDto>,
+    pub sha1: String,
+}
+
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DayOutputDto {
     pub id: u64,
@@ -50,7 +56,8 @@ impl From<DailyPrayerTime> for DayOutputDto {
             "{}{:02}{:02}",
             day.gregorian_date.year, day.gregorian_date.month, day.gregorian_date.day
         )
-        .parse().unwrap_or_default();
+        .parse()
+        .unwrap_or_default();
         let event = match day.event {
             None => None,
             Some(e) => Some(EventOutputDto { ar: e.ar, en: e.en }),
