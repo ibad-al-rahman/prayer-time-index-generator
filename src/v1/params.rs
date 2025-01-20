@@ -30,7 +30,7 @@ pub enum InputFormat {
     Csv,
 }
 
-#[derive(Debug, Clone, ValueEnum)]
+#[derive(Debug, Clone, ValueEnum, PartialEq, Eq)]
 pub enum WeekDay {
     Sun,
     Mon,
@@ -39,6 +39,20 @@ pub enum WeekDay {
     Thu,
     Fri,
     Sat,
+}
+
+impl WeekDay {
+    pub fn previous(&self) -> Self {
+        match self {
+            WeekDay::Sun => WeekDay::Sat,
+            WeekDay::Mon => WeekDay::Sun,
+            WeekDay::Tue => WeekDay::Mon,
+            WeekDay::Wed => WeekDay::Tue,
+            WeekDay::Thu => WeekDay::Wed,
+            WeekDay::Fri => WeekDay::Thu,
+            WeekDay::Sat => WeekDay::Fri,
+        }
+    }
 }
 
 impl V1Params {
@@ -52,7 +66,7 @@ impl V1Params {
             InputFormat::Json => {}
             InputFormat::Csv => {
                 generator.generate_daily_prayer_times()?;
-                generator.generate_weekly_prayer_times()?;
+                generator.generate_weekly_prayer_times(self.week_start_day.clone())?;
                 generator.generate_yearly_prayer_times()?;
                 generator.generate_monthly_prayer_times()?;
                 generator.generate_sha1()?;
