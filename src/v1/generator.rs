@@ -3,10 +3,15 @@ use super::domain::Event;
 use super::input_dtos::DayInputDto;
 use super::input_dtos::EventInputDto;
 use super::output_dtos::*;
+use super::params::WeekDay;
 use crate::pathbuf;
 use crate::prelude::Fallible;
 use crate::v1::domain::DailyPrayerTime;
 use crate::v1::domain::GregorianDate;
+use chrono::offset::LocalResult;
+use chrono::Datelike;
+use chrono::TimeZone;
+use chrono::Utc;
 use serde_json::json;
 use sha1::Digest;
 use sha1::Sha1;
@@ -113,8 +118,8 @@ impl Generator {
         Ok(())
     }
 
-    pub fn generate_weekly_prayer_times(&self) -> Fallible<()> {
-        self.generate_week_idx(self.yearly_prayer_times.clone())
+    pub fn generate_weekly_prayer_times(&self, starting_at: WeekDay) -> Fallible<()> {
+        self.generate_week_idx(self.yearly_prayer_times.clone(), starting_at)
     }
 
     pub fn generate_monthly_prayer_times(&self) -> Fallible<()> {
@@ -148,26 +153,101 @@ impl Generator {
         Ok(())
     }
 
-    fn generate_week_idx(&self, days_of_month: Vec<DailyPrayerTime>) -> Fallible<()> {
+    fn generate_week_idx(
+        &self,
+        days_of_month: Vec<DailyPrayerTime>,
+        starting_at: WeekDay,
+    ) -> Fallible<()> {
         let Some(day_one) = days_of_month.first() else {
             return Ok(());
         };
         let year_num = day_one.gregorian_date.year;
-        let week_dir = pathbuf![self.output_dir.clone(), "week", year_num.to_string()];
+        let week_dir = pathbuf![self.output_dir.clone(), "year", "weeks"];
         fs::create_dir_all(&week_dir)?;
-        let days_iter = days_of_month.into_iter();
+        let week_path = pathbuf![week_dir.clone(), format!("{year_num}.json")];
+        let week_file = File::create(week_path)?;
+        let mut days_iter = days_of_month.into_iter();
+        let mut year_weeks = YearWeeksOutputDto {
+            weeks: vec![],
+            sha1: self.make_sha1()?,
+        };
+
         for week_idx in 1..=53 {
-            let week = days_iter
-                .clone()
-                .skip((week_idx - 1) * 7)
-                .take(7)
-                .map(|day| day.into())
-                .collect::<Vec<DayOutputDto>>();
-            let week_path = pathbuf![week_dir.clone(), format!("{week_idx:02}.json")];
-            let week_file = File::create(week_path)?;
-            let json = serde_json::to_value(&week)?;
-            serde_json::to_writer_pretty(week_file, &json)?;
+            let id = format!("{year_num}{:02}", week_idx).parse()?;
+            let mut week = WeekOutputDto {
+                id,
+                mon: None,
+                tue: None,
+                wed: None,
+                thu: None,
+                fri: None,
+                sat: None,
+                sun: None,
+            };
+            for _ in 0..7 {
+                let Some(day) = days_iter.next() else {
+                    break;
+                };
+                let LocalResult::Single(day_of_the_week) = Utc.with_ymd_and_hms(
+                    day.gregorian_date.year.into(),
+                    day.gregorian_date.month.into(),
+                    day.gregorian_date.day.into(),
+                    0,
+                    0,
+                    0,
+                ) else {
+                    break;
+                };
+                let day_of_the_week = day_of_the_week.weekday();
+                match day_of_the_week {
+                    chrono::Weekday::Mon => {
+                        week.mon = Some(day.into());
+                        if starting_at.previous() == WeekDay::Mon {
+                            break;
+                        }
+                    }
+                    chrono::Weekday::Tue => {
+                        week.tue = Some(day.into());
+                        if starting_at.previous() == WeekDay::Tue {
+                            break;
+                        }
+                    }
+                    chrono::Weekday::Wed => {
+                        week.wed = Some(day.into());
+                        if starting_at.previous() == WeekDay::Wed {
+                            break;
+                        }
+                    }
+                    chrono::Weekday::Thu => {
+                        week.thu = Some(day.into());
+                        if starting_at.previous() == WeekDay::Thu {
+                            break;
+                        }
+                    }
+                    chrono::Weekday::Fri => {
+                        week.fri = Some(day.into());
+                        if starting_at.previous() == WeekDay::Fri {
+                            break;
+                        }
+                    }
+                    chrono::Weekday::Sat => {
+                        week.sat = Some(day.into());
+                        if starting_at.previous() == WeekDay::Sat {
+                            break;
+                        }
+                    }
+                    chrono::Weekday::Sun => {
+                        week.sun = Some(day.into());
+                        if starting_at.previous() == WeekDay::Sun {
+                            break;
+                        }
+                    }
+                }
+            }
+            year_weeks.weeks.push(week);
         }
+        let json = serde_json::to_value(&year_weeks)?;
+        serde_json::to_writer_pretty(week_file, &json)?;
         Ok(())
     }
 
@@ -198,7 +278,7 @@ impl Generator {
             return Ok(());
         };
         let year_num = day_one.gregorian_date.year;
-        let year_dir = pathbuf![self.output_dir.clone(), "year"];
+        let year_dir = pathbuf![self.output_dir.clone(), "year", "days"];
         fs::create_dir_all(&year_dir)?;
 
         let year_path = pathbuf![year_dir.clone(), format!("{year_num}.json")];

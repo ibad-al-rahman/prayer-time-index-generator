@@ -8,6 +8,24 @@ pub struct YearOutputDto {
 }
 
 #[derive(Debug, Serialize)]
+pub struct YearWeeksOutputDto {
+    pub weeks: Vec<WeekOutputDto>,
+    pub sha1: String,
+}
+
+#[derive(Debug, Serialize)]
+pub struct WeekOutputDto {
+    pub id: u64,
+    pub mon: Option<DayOutputDto>,
+    pub tue: Option<DayOutputDto>,
+    pub wed: Option<DayOutputDto>,
+    pub thu: Option<DayOutputDto>,
+    pub fri: Option<DayOutputDto>,
+    pub sat: Option<DayOutputDto>,
+    pub sun: Option<DayOutputDto>,
+}
+
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DayOutputDto {
     pub id: u64,
