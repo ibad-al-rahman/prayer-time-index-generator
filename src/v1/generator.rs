@@ -85,7 +85,7 @@ impl Generator {
                         },
                         hijri_date: day.hijri,
                         prayer_times: domain::PrayerTimes {
-                            fajer: day.fajer,
+                            fajr: day.fajr,
                             sunrise: day.sunrise,
                             dhuhr: day.dhuhr,
                             asr: day.asr,

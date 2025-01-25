@@ -38,7 +38,7 @@ pub struct DayOutputDto {
 
 #[derive(Debug, Serialize)]
 pub struct PrayerTimesOutputDto {
-    pub fajer: String,
+    pub fajr: String,
     pub sunrise: String,
     pub dhuhr: String,
     pub asr: String,
@@ -89,7 +89,7 @@ impl From<DailyPrayerTime> for DayOutputDto {
             ),
             hijri,
             prayer_times: PrayerTimesOutputDto {
-                fajer: day.prayer_times.fajer,
+                fajr: day.prayer_times.fajr,
                 sunrise: day.prayer_times.sunrise,
                 dhuhr: day.prayer_times.dhuhr,
                 asr: day.prayer_times.asr,
