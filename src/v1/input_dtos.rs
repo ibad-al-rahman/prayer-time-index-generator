@@ -5,7 +5,7 @@ use serde::Deserialize;
 pub struct DayInputDto {
     pub day: u16,
     pub hijri: String,
-    pub fajer: String,
+    pub fajr: String,
     pub sunrise: String,
     pub dhuhr: String,
     pub asr: String,
@@ -25,7 +25,7 @@ impl From<DailyPrayerTime> for DayInputDto {
         Self {
             day: day.gregorian_date.day,
             hijri: day.hijri_date,
-            fajer: day.prayer_times.fajer,
+            fajr: day.prayer_times.fajr,
             sunrise: day.prayer_times.sunrise,
             dhuhr: day.prayer_times.dhuhr,
             asr: day.prayer_times.asr,

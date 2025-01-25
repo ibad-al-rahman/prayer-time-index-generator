@@ -11,7 +11,7 @@ pub struct DailyPrayerTime {
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 pub struct PrayerTimes {
-    pub fajer: String,
+    pub fajr: String,
     pub sunrise: String,
     pub dhuhr: String,
     pub asr: String,
