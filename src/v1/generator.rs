@@ -2,6 +2,7 @@ use super::domain;
 use super::domain::Event;
 use super::input_dtos::DayInputDto;
 use super::input_dtos::EventInputDto;
+use super::input_dtos::WeeklyHadithInputDto;
 use super::output_dtos::*;
 use super::params::WeekDay;
 use crate::pathbuf;
@@ -24,6 +25,7 @@ use std::path::PathBuf;
 pub struct Generator {
     pub output_dir: PathBuf,
     pub yearly_prayer_times: Vec<DailyPrayerTime>,
+    pub weekly_hadith: HashMap<u16, String>,
 }
 
 impl Generator {
@@ -37,12 +39,14 @@ impl Generator {
                 )
             })
             .collect::<HashMap<_, _>>();
-        let events = Self::make_events(year_dir)?;
+        let events = Self::make_events(year_dir.clone())?;
+        let weekly_hadith = Self::make_weekly_hadiths(year_dir)?;
         let yearly_prayer_times =
             Self::make_yearly_prayer_times(year, input_dir_content.clone(), events)?;
         let this = Self {
             output_dir,
             yearly_prayer_times,
+            weekly_hadith,
         };
         Ok(this)
     }
@@ -56,6 +60,14 @@ impl Generator {
             .into_iter()
             .map(|e| (e.date, Event { ar: e.ar, en: e.en }))
             .collect())
+    }
+
+    fn make_weekly_hadiths(year_dir: PathBuf) -> Fallible<HashMap<u16, String>> {
+        let hadiths = csv::Reader::from_path(pathbuf![year_dir, "weekly_hadith.csv"])?
+            .deserialize()
+            .flatten()
+            .collect::<Vec<WeeklyHadithInputDto>>();
+        Ok(hadiths.into_iter().map(|h| (h.week, h.hadith)).collect())
     }
 
     fn make_yearly_prayer_times(
@@ -174,6 +186,10 @@ impl Generator {
 
         for week_idx in 1..=53 {
             let id = format!("{year_num}{:02}", week_idx).parse()?;
+            let Some(hadith) = self.weekly_hadith.get(&week_idx) else {
+                continue;
+            };
+
             let mut week = WeekOutputDto {
                 id,
                 mon: None,
@@ -183,6 +199,7 @@ impl Generator {
                 fri: None,
                 sat: None,
                 sun: None,
+                hadith: hadith.clone(),
             };
             for _ in 0..7 {
                 let Some(day) = days_iter.next() else {

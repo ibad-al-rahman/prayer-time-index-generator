@@ -20,6 +20,12 @@ pub struct EventInputDto {
     pub en: Option<String>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct WeeklyHadithInputDto {
+    pub week: u16,
+    pub hadith: String,
+}
+
 impl From<DailyPrayerTime> for DayInputDto {
     fn from(day: DailyPrayerTime) -> Self {
         Self {
