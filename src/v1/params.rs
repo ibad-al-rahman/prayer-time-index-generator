@@ -57,7 +57,7 @@ impl WeekDay {
 
 impl V1Params {
     pub fn generate(&self) -> Fallible<()> {
-        let generator = Generator::new(
+        let mut generator = Generator::new(
             self.year,
             self.year_dir.clone(),
             pathbuf![&self.output_dir_path, "v1"],

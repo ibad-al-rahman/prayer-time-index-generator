@@ -34,6 +34,8 @@ pub struct DayOutputDto {
     pub hijri: String,
     pub prayer_times: PrayerTimesOutputDto,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub week_id: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub event: Option<EventOutputDto>,
 }
 
@@ -89,6 +91,7 @@ impl From<DailyPrayerTime> for DayOutputDto {
                 day.gregorian_date.day, day.gregorian_date.month, day.gregorian_date.year
             ),
             hijri,
+            week_id: day.week_id,
             prayer_times: PrayerTimesOutputDto {
                 fajr: day.prayer_times.fajr,
                 sunrise: day.prayer_times.sunrise,

@@ -95,6 +95,7 @@ impl Generator {
                             month: i,
                             year,
                         },
+                        week_id: None,
                         hijri_date: day.hijri,
                         prayer_times: domain::PrayerTimes {
                             fajr: day.fajr,
@@ -130,7 +131,7 @@ impl Generator {
         Ok(())
     }
 
-    pub fn generate_weekly_prayer_times(&self, starting_at: WeekDay) -> Fallible<()> {
+    pub fn generate_weekly_prayer_times(&mut self, starting_at: WeekDay) -> Fallible<()> {
         self.generate_week_idx(self.yearly_prayer_times.clone(), starting_at)
     }
 
@@ -166,7 +167,7 @@ impl Generator {
     }
 
     fn generate_week_idx(
-        &self,
+        &mut self,
         days_of_month: Vec<DailyPrayerTime>,
         starting_at: WeekDay,
     ) -> Fallible<()> {
@@ -178,7 +179,7 @@ impl Generator {
         fs::create_dir_all(&week_dir)?;
         let week_path = pathbuf![week_dir.clone(), format!("{year_num}.json")];
         let week_file = File::create(week_path)?;
-        let mut days_iter = days_of_month.into_iter();
+        let mut days_iter = days_of_month.into_iter().enumerate();
         let mut year_weeks = YearWeeksOutputDto {
             weeks: vec![],
             sha1: self.make_sha1()?,
@@ -186,6 +187,7 @@ impl Generator {
 
         for week_idx in 1..=53 {
             let id = format!("{year_num}{:02}", week_idx).parse()?;
+
             let Some(hadith) = self.weekly_hadith.get(&week_idx) else {
                 continue;
             };
@@ -202,9 +204,10 @@ impl Generator {
                 hadith: hadith.clone(),
             };
             for _ in 0..7 {
-                let Some(day) = days_iter.next() else {
+                let Some((idx, day)) = days_iter.next() else {
                     break;
                 };
+                self.yearly_prayer_times[idx].week_id = Some(id);
                 let LocalResult::Single(day_of_the_week) = Utc.with_ymd_and_hms(
                     day.gregorian_date.year.into(),
                     day.gregorian_date.month.into(),
