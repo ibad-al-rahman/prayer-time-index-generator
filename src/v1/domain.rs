@@ -6,6 +6,7 @@ pub struct DailyPrayerTime {
     pub gregorian_date: GregorianDate,
     pub hijri_date: String,
     pub prayer_times: PrayerTimes,
+    pub week_id: Option<u64>,
     pub event: Option<Event>,
 }
 
