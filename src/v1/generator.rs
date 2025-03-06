@@ -1,5 +1,6 @@
 use super::domain;
 use super::domain::Event;
+use super::domain::Hadith;
 use super::input_dtos::DayInputDto;
 use super::input_dtos::EventInputDto;
 use super::input_dtos::WeeklyHadithInputDto;
@@ -25,7 +26,7 @@ use std::path::PathBuf;
 pub struct Generator {
     pub output_dir: PathBuf,
     pub yearly_prayer_times: Vec<DailyPrayerTime>,
-    pub weekly_hadith: HashMap<u16, String>,
+    pub weekly_hadith: HashMap<u16, Hadith>,
 }
 
 impl Generator {
@@ -62,7 +63,7 @@ impl Generator {
             .collect())
     }
 
-    fn make_weekly_hadiths(year_dir: PathBuf) -> HashMap<u16, String> {
+    fn make_weekly_hadiths(year_dir: PathBuf) -> HashMap<u16, Hadith> {
         let Ok(mut reader) = csv::Reader::from_path(pathbuf![year_dir, "weekly_hadith.csv"]) else {
             return HashMap::new();
         };
@@ -71,7 +72,18 @@ impl Generator {
             .deserialize()
             .flatten()
             .collect::<Vec<WeeklyHadithInputDto>>();
-        hadiths.into_iter().map(|h| (h.week, h.hadith)).collect()
+        hadiths
+            .into_iter()
+            .map(|h| {
+                (
+                    h.week,
+                    Hadith {
+                        hadith: h.hadith,
+                        note: h.note,
+                    },
+                )
+            })
+            .collect()
     }
 
     fn make_yearly_prayer_times(
@@ -201,7 +213,10 @@ impl Generator {
                 fri: None,
                 sat: None,
                 sun: None,
-                hadith: hadith.map(Clone::clone),
+                hadith: hadith.map(|h| HaidthOutputDto {
+                    hadith: h.hadith.clone(),
+                    note: h.note.clone(),
+                }),
             };
             for _ in 0..7 {
                 let Some((idx, day)) = days_iter.next() else {
