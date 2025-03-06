@@ -201,7 +201,7 @@ impl Generator {
                 fri: None,
                 sat: None,
                 sun: None,
-                hadith: hadith.map(|h| h.clone()),
+                hadith: hadith.map(Clone::clone),
             };
             for _ in 0..7 {
                 let Some((idx, day)) = days_iter.next() else {
