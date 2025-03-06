@@ -34,6 +34,12 @@ pub struct Event {
     pub en: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+pub struct Hadith {
+    pub hadith: String,
+    pub note: Option<String>,
+}
+
 impl Display for GregorianDate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_fmt(format_args!("{}/{}/{}", self.year, self.month, self.day))

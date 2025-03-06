@@ -24,6 +24,7 @@ pub struct EventInputDto {
 pub struct WeeklyHadithInputDto {
     pub week: u16,
     pub hadith: String,
+    pub note: Option<String>,
 }
 
 impl From<DailyPrayerTime> for DayInputDto {

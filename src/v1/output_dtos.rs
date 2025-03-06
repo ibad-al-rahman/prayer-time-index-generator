@@ -23,7 +23,13 @@ pub struct WeekOutputDto {
     pub fri: Option<DayOutputDto>,
     pub sat: Option<DayOutputDto>,
     pub sun: Option<DayOutputDto>,
-    pub hadith: Option<String>,
+    pub hadith: Option<HaidthOutputDto>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct HaidthOutputDto {
+    pub hadith: String,
+    pub note: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
