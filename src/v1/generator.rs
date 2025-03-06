@@ -40,7 +40,7 @@ impl Generator {
             })
             .collect::<HashMap<_, _>>();
         let events = Self::make_events(year_dir.clone())?;
-        let weekly_hadith = Self::make_weekly_hadiths(year_dir)?;
+        let weekly_hadith = Self::make_weekly_hadiths(year_dir);
         let yearly_prayer_times =
             Self::make_yearly_prayer_times(year, input_dir_content.clone(), events)?;
         let this = Self {
@@ -62,12 +62,16 @@ impl Generator {
             .collect())
     }
 
-    fn make_weekly_hadiths(year_dir: PathBuf) -> Fallible<HashMap<u16, String>> {
-        let hadiths = csv::Reader::from_path(pathbuf![year_dir, "weekly_hadith.csv"])?
+    fn make_weekly_hadiths(year_dir: PathBuf) -> HashMap<u16, String> {
+        let Ok(mut reader) = csv::Reader::from_path(pathbuf![year_dir, "weekly_hadith.csv"]) else {
+            return HashMap::new();
+        };
+
+        let hadiths = reader
             .deserialize()
             .flatten()
             .collect::<Vec<WeeklyHadithInputDto>>();
-        Ok(hadiths.into_iter().map(|h| (h.week, h.hadith)).collect())
+        hadiths.into_iter().map(|h| (h.week, h.hadith)).collect()
     }
 
     fn make_yearly_prayer_times(
@@ -187,11 +191,7 @@ impl Generator {
 
         for week_idx in 1..=53 {
             let id = format!("{year_num}{:02}", week_idx).parse()?;
-
-            let Some(hadith) = self.weekly_hadith.get(&week_idx) else {
-                continue;
-            };
-
+            let hadith = self.weekly_hadith.get(&week_idx);
             let mut week = WeekOutputDto {
                 id,
                 mon: None,
@@ -201,7 +201,7 @@ impl Generator {
                 fri: None,
                 sat: None,
                 sun: None,
-                hadith: hadith.clone(),
+                hadith: hadith.map(|h| h.clone()),
             };
             for _ in 0..7 {
                 let Some((idx, day)) = days_iter.next() else {
