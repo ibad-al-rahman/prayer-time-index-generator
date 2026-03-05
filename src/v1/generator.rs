@@ -120,6 +120,7 @@ impl Generator {
                             asr: day.asr,
                             maghrib: day.maghrib,
                             ishaa: day.ishaa,
+                            imsak: day.imsak,
                         },
                         event: event.cloned(),
                     };

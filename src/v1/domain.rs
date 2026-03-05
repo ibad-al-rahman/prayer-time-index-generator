@@ -18,6 +18,7 @@ pub struct PrayerTimes {
     pub asr: String,
     pub maghrib: String,
     pub ishaa: String,
+    pub imsak: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

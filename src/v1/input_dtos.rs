@@ -11,6 +11,7 @@ pub struct DayInputDto {
     pub asr: String,
     pub maghrib: String,
     pub ishaa: String,
+    pub imsak: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -38,6 +39,7 @@ impl From<DailyPrayerTime> for DayInputDto {
             asr: day.prayer_times.asr,
             maghrib: day.prayer_times.maghrib,
             ishaa: day.prayer_times.ishaa,
+            imsak: day.prayer_times.imsak,
         }
     }
 }
