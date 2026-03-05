@@ -53,6 +53,8 @@ pub struct PrayerTimesOutputDto {
     pub asr: String,
     pub maghrib: String,
     pub ishaa: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub imsak: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -105,6 +107,7 @@ impl From<DailyPrayerTime> for DayOutputDto {
                 asr: day.prayer_times.asr,
                 maghrib: day.prayer_times.maghrib,
                 ishaa: day.prayer_times.ishaa,
+                imsak: day.prayer_times.imsak,
             },
             event,
         }
