@@ -11,6 +11,7 @@ pub struct DayInputDto {
     pub asr: String,
     pub maghrib: String,
     pub ishaa: String,
+    #[serde(default)]
     pub imsak: Option<String>,
 }
 

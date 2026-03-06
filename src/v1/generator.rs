@@ -99,8 +99,7 @@ impl Generator {
             if let Some(month_file) = input_dir_map.get(&format!("{i:02}.csv")) {
                 let days = csv::Reader::from_path(month_file)?
                     .deserialize()
-                    .flatten()
-                    .collect::<Vec<DayInputDto>>();
+                    .collect::<Result<Vec<DayInputDto>, _>>()?;
                 for day in days {
                     let event_key = format!("{}/{}", day.day, i);
                     let event = year_events.get(&event_key);
